@@ -1,0 +1,724 @@
+{% set active_page = 'user_edit' %}
+<!DOCTYPE html>
+<html lang="pt-BR" prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb#">
+
+<head>
+    {% include 'inc_head.jinja' %}
+    {% include "components/inc_head_nohead.jinja" %}
+    {% include "components/head.jinja" %}
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="robots" content="noindex">
+    <meta name="author" content="AesCare">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <script src="https://cdn.aescare.com/js/data/countries.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AesCare - {{ _("Novo usuário")}}</title>
+    <link rel="stylesheet" href="https://cdn.aescare.com/ext/jquery-ui-1.12.1/jquery-ui.min.css">
+    <link rel="shortcut icon" type="image/x-icon" href="https://cdn.aescare.com/favicon.ico">
+</head>
+
+<style>
+    p {
+        font-size: 13px;
+    }
+
+    footer{
+        display:none;
+    }
+    .modal-backdrop {
+        background-color: white;
+    }
+</style>
+
+<body>
+   <div hidden> {% include 'inc_header.jinja' %}</div>
+    {% include "components/header.jinja" %}
+    {% include "components/head.jinja" %}
+
+    <div class="container mb-4" id="user_profile_edit_app">
+   <div class="shadow p-0 mb-5 bg-white rounded" style="border-radius: 15px!important;">
+   <div class="card mt-5" style="border-radius: 15px; background-color: #f9f1ff; padding: 20px;">
+
+
+    <div class="container-fluid content" style="padding:20px" id="simulator_app" data-reactroot="" class="user-form content">
+        <div>
+        
+                <div data-reactroot="" class="user-form content">
+                <h1 style="display: inline"><img style="border-radius:50%;float:right;;border-style:solid; border-width:5px; border-color: #686DDC; display: inline" v-if="user" v-bind:src="'https://br.aescare.com/user/photo/' + user.key + '.jpg'">
+                        <h1 style="font-size: 3.0rem;color:black">{{ _("Simulação da plástica 3D")}}</h1>
+                        <br>
+                        <br>
+                        <br>
+                 <label> <h5 style="text-align: center;font-weight: bold;color: #fff; margin-top: 0px;opacity:70%; background-color:#6f42c1;border-radius:5px; ">{{ _("Quer saber como você poderia ficar depois da cirurgia plástica? Responda o formulário abaixo que após o envio entraremos em contato para dar continuidade na realização da simulação da sua tão sonhada cirurgia plástica.")}} </h5> </label>
+                 <br>
+                <form class="edit-profile-form" enctype="multipart/form-data">
+                    <div class="row mt-4">
+
+                          <div class="col-12 col-md-6 form-group">
+                            <label style="font-weight: bold;">{{ _("Nome de usuário: *")}}</label>
+                            <input style="border-radius: 5px;" placeholder="{{ _('Nome de usuário')}}" type="text" v-model="username" class="form-control" autocomplete="off">
+                            <small class="error text-error"></small>
+                        </div>
+                          <div class="col-12 col-md-6 form-group">
+                            <label style="font-weight: bold;">{{_("Celular (DDD + Número - Ex.: 11987654321): *" )}}</label>
+                            <input style="border-radius: 5px;" placeholder="{{ _('Digite seu número')}}"type="text" class="form-control" v-model="phone">
+                        </div>
+                        
+                          <div class="col-12 col-md-6 form-group">
+                            <label for="phone" style="font-weight: bold;">{{ _("Digite seu DDD e Celular(whatsapp) para confirmação do número:*")}}</label>
+                            <div style="display:flex;">
+                                <input type="text" v-model="simulator.ddd" placeholder="{{ _('DDD')}}" class="form-control" style="width: 59px; text-align: center;" maxlength="2">
+                                <input type="text" v-model="simulator.phone" placeholder="{{ _('Nº do Whatsapp')}}" class="form-control" onblur="simulator_app.sendPhoneValidationCode()">
+                            </div>
+                            <br>
+                         {# </div> #}
+                            {# <div class="col-12 col-md-6 form-group"> #}
+                            <label for="phone_validation_code" style="font-weight: bold;">{{ _("Código de confirmação:*")}}</label><br/>
+                            <span id="phone_validation_msg" style="display:none;font-size: 0.8rem;color:#B83FD9">Foi enviado por SMS e WhatsApp um código de confirmação para verificar o númerdo do seu celular. Informe os 4 números recebidos neste campo.</span>
+                            <input type="text" v-model="simulator.phone_validation_code" class="form-control" maxlength="4" size="5" style="width:60px">
+                            <a href="javascript:void(0)"  v-on:click="resendPhoneValidationCode()">Re-enviar código</a>
+                            </div> 
+
+                          <div class="col-12 col-md-6 form-group">
+                            <label style="font-weight: bold;">{{_("E-mail: *")}}</label>
+                            <input style="border-radius: 5px;"placeholder="{{ _('Digite seu E-mail')}}"type="text" class="form-control" v-model="email">
+                        </div>
+                        
+                          <div class="col-12 col-md-6 form-group">
+                             <label style="font-weight: bold;">{{_("Digite e selecione os procedimentos que tem interesse em realizar: *")}}</label>
+                            <div class="form-group mt-2">
+                                <input style="border-radius: 5px;"type="text" id="search_treatment" v-model="treatment_id" class="form-control" placeholder="{{ _('Digite o nome do procedimento que procura')}}"value="" required>
+                                <div id="react-autowhatever-treatment_select" class="react-autosuggest__suggestions-container"></div>
+                            </div>
+                            </div> 
+
+
+
+                             <div style="text-align: center;">
+                                <label> <h3 style="font-weight: bold;border-radius:5px;">{{ _("Selecione a parte do corpo referente ao procedimento que você deseja realizar:")}}</h3></label>
+                               
+                               <fieldset class="radio-image">
+                               <label for="mama">
+                                <div style="display: inline-block;width: 90px;height: 110px;">
+                                <a style="cursor:pointer">
+                                <input type="radio" v-model="body_part" name="parte-do-corpo" id="mama" value="mama">
+                                <img class="body_part_img" src="https://cdn.aescare.com/img/body_parts/mama.png" id="body_part_7" v-on:click="select_part('7')" class="">
+                                </a>
+                                <span id="txt_body_part_7">{{ _("Mama")}}</span>
+                                </div>
+                                </label>
+
+                                <label for="corpo">
+                                <div style="display: inline-block;width: 90px;height: 110px;">
+                                <a style="cursor:pointer">
+                                <input type="radio"  v-model="body_part" name="parte-do-corpo" id="corpo" value="corpo">
+                                <img class="body_part_img" src="https://cdn.aescare.com/img/body_parts/corpo.png" id="body_part_14" v-on:click="select_part('14')" class="">
+                                </a>
+                                <span id="txt_body_part_14">{{ _("Corpo")}}</span>
+                                </div>
+                                </label>
+
+                                <label for="rosto">
+                                <div style="display: inline-block;width: 90px;height: 110px;">
+                                <a style="cursor:pointer">
+                                <input type="radio"  v-model="body_part" name="parte-do-corpo" id="rosto" value="rosto">
+                                <img class="body_part_img" class="body_part_img" src="https://cdn.aescare.com/img/body_parts/face.png" id="body_part_2" v-on:click="select_part('2')" class="">
+                                </a>
+                                <span id="txt_body_part_2">{{ _("Rosto")}}</span>
+                                </div>
+                                </label>
+
+                                </fieldset>
+
+
+                                </div>
+                              
+                            </div>
+
+                                <br>
+                                <br>
+                                
+
+                                                              
+                                 <div>
+                                    <label><h3 style="font-weight: bold;border-radius:5px;">{{ _("Caso você queira colocar prótese de silicone, qual tamanho está mais próximo do que deseja?")}}</h3></label>
+
+                               <fieldset>
+
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input  type="radio" v-model="prosthesis_size" id="silicone1" name="silicone1" value="200 ml" for="silicone1" style="font-size:15px"> 200 ml                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="prosthesis_size" id="silicone2" name="silicone2" value="300 ml"for="silicone2" style="font-size:15px"> 300 ml                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="prosthesis_size" id="silicone3" name="silicone3" value="400 ml" for="silicone3" style="font-size:15px"> 400 ml                           
+                                </div>
+                                </fieldset>
+
+                                </div>
+
+                                 <br>
+                                 
+
+                                <div >
+                                <label ><h3 style="text-align: center;font-weight: bold;border-radius:5px; "> {{ _("Quando você pretende operar?")}}</h3></label>
+
+                               <fieldset>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="intention_date" id="data1" name="data1" value="2-semestre-2022" for="data1" style="font-size:15px"> 2° semestre de 2022                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="intention_date" id="data2" name="data2" value="1-semestre-2023" for="data2" style="font-size:15px"> 1° semestre de 2023                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="intention_date" id="data3" name="data3" value="2-semestre-2023" for="data3" style="font-size:15px"> 2° semestre de 2023                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="intention_date" id="data4" name="data4" value="2024" for="data4" style="font-size:15px"> 2024                            
+                                </div>
+                                <div class="col-12 col-md-12  form-group" style="margin-bottom: 0px;">
+                                <input type="radio" v-model="intention_date" id="data5" name="data5" value="2025" for="data5" style="font-size:15px"> 2025                            
+                                </div>    
+                                </fieldset>    
+
+                                </div>
+                                <br>
+
+                                <div>
+                                 <label><h4 style="text-align: center;font-weight: bold;color: #fff; margin-top: 0px;opacity:70%; background-color:#6f42c1;border-radius:5px; "> {{ _("Para prosseguir com a sua simulação, preencha os campos obrigatorios abaixo, com nome e telefone  de três amigas que também gostariam de realizar a simulação 3D da cirurgia plástica.")}}</h4></label>
+                                 </div>
+                                     <div class="col-12 col-md-6 form-group">
+                                    <label>{{ _("Nome completo da sua primeira amiga: *")}}</label>
+                                    <input style="border-radius: 5px"  type="text" value="" id="amiga1" v-model="friends_names.amiga1"  placeholder="{{ _('Nome da sua primeira amiga')}}" class="form-control" required>
+                                    <small class="text-muted input-info">{{ _("Digite no campo o nome da sua amiga.")}}</small>
+
+                                    </div>
+                                    <div class="col-12 col-md-6 form-group">
+                                    <label for="phone">{{ _(" Informe o número de whatsapp(Com DDD) da sua primeira amiga:*")}}</label>
+                                    <div style="display:flex;">
+                                 <input type="text" v-model="friends_phones.amigaDdd1" placeholder="{{ _('DDD')}}" class="form-control" style="width: 59px; text-align: center;" maxlength="2">
+                                 <input type="text" v-model="friends_phones.amigaPhone1" placeholder="{{ _('Nº do Whatsapp')}}" class="form-control" onblur="simulator_app.sendInviteSimulator()" style="border-radius: 5px;border-bottom-left-radius: 0px;border-top-left-radius: 0;background-color: white;border-left:none;padding-left:5px;">
+                                     </div>
+                                     </div>
+                                </div> 
+
+                                  <br><hr> 
+
+                                     <div class="col-12 col-md-6 form-group">
+                                    <label>{{ _("Nome completo da sua segunda amiga: *")}}</label>
+                                    <input style="border-radius: 5px"  type="text" value="" id="amiga2" v-model="friends_names.amiga2"  placeholder="{{ _('Nome da sua segunda amiga')}}" class="form-control" required>
+                                    <small class="text-muted input-info">{{ _("Digite no campo o nome da sua amiga.")}}</small>
+
+                                </div>
+
+                                <div class="col-12 col-md-6 form-group">
+                            <label for="phone">{{ _(" Informe o número de whatsapp(Com DDD) da sua segunda amiga:*")}}</label>
+                            <div style="display:flex;">
+                                <input type="text" v-model="friends_phones.amigaDdd2" placeholder="{{ _('DDD')}}" class="form-control" style="width: 59px; text-align: center;" maxlength="2">
+                                <input type="text" v-model="friends_phones.amigaPhone2" placeholder="{{ _('Nº do Whatsapp')}}" class="form-control" onblur="simulator_app.sendInviteSimulator()" style="border-radius: 5px;border-bottom-left-radius: 0px;border-top-left-radius: 0;background-color: white;border-left:none;padding-left:5px;">
+                            </div>
+                                </div> 
+                                  <br><hr>
+                            
+
+                              <div class="col-12 col-md-6 form-group">
+                                    <label for="phone"> {{ _("Nome completo da sua terceira amiga: *")}}</label>
+                                    <input style="border-radius: 5px"  type="text" value="" id="amiga3" v-model="friends_names.amiga3"  placeholder="{{ _('Nome da sua terceira amiga')}}" class="form-control" required>
+                                    <small class="text-muted input-info">{{ _("Digite no campo o nome da sua amiga.")}}</small>
+
+                                    </div>
+
+
+                                    <div class="col-12 col-md-6 form-group">
+                            <label for="phone">{{ _(" Informe o número de whatsapp(Com DDD) da sua terceira amiga:*")}}</label>
+                            <div style="display:flex;">
+                                <input type="text" v-model="friends_phones.amigaDdd3" placeholder="{{ _('DDD')}}" class="form-control" style="width: 59px; text-align: center;" maxlength="2">
+                                <input type="text" v-model="friends_phones.amigaPhone3" placeholder="{{ _('Nº do Whatsapp')}}" class="form-control" onblur="simulator_app.sendInviteSimulator()" style="border-radius: 5px;border-bottom-left-radius: 0px;border-top-left-radius: 0;background-color: white;border-left:none;padding-left:5px;">
+                            </div>
+                                </div> 
+                                
+
+                                        
+
+                        <div class="col-12 text-right mt-3">
+                            <!-- a href="#" class="btn btn-info mr-1">Cancelar</a -->
+                            <a v-on:click="send" class="btn btn-primary" style="color: white;">{{ _("Enviar")}}</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="loadingModalCentered" aria-hidden="true" data-backdrop="static" style="position: fixed;">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div style="background-color: #fff0; margin: auto;">
+                    <div class="modal-body" style="margin: auto;">
+                        <img src="/img/loading.gif">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+    </div>
+
+    <div hidden>{% include 'inc_footer.jinja' %}</div>
+    {% include "components/footer.jinja" %}
+
+    
+    <script src="https://cdn.aescare.com/ext/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+{# 
+    <script>
+        function aescare_user_detail_callback(user) {
+
+            if(user!=null){
+                simulator_app.username = user.username;
+                
+                if(user.encrypted_password == null){
+                    simulator_app.has_password = false;
+                }else{
+                    simulator_app.has_password = true;
+                }
+                simulator_app.email = user.email;
+                simulator_app.phone = user.phone;
+                simulator_app.gender = user.gender;
+                simulator_app.is_medic = user.is_medic;
+                simulator_app.user.has_photo = "{{ 'true' if user.has_photo == True else 'false' }}";
+                simulator_app.user.url_image = "{{ user.url_image if user.url_image else '' }}";
+              
+
+            }else{
+                window.location.href = "/login";
+            }
+
+        }
+
+    </script> #}
+   <script>
+        function aescare_user_detail_callback(user) {
+
+            if(simu!=null){
+                simulator_app.username = simu.username;
+               // simulator_app.email = simu.email;
+                simulator_app.phone = simu.phones;
+                simulator_app.prosthesis_size = simu.prosthesis_size;
+                simulator_app.intention_date = simu.intention_date;
+                simulator_app.friends_names = simu.friends_names;
+                simulator_app.friends_phones = simu.friends_phones;
+                simulator_app.treatment_id = simu.treatment_id;
+                simulator_app.body_part = simu.body_part;
+
+                
+              
+
+            }else{
+                window.location.href = "/login";
+            }
+
+        }
+
+    </script>
+    <script>
+        Vue.config.devtools = true;
+
+        simulator_app = new Vue({
+            el: '#simulator_app',
+            data: {
+                email: null,
+                notifications_selected: [],
+                phone: null,
+                body_part: "",
+           	    user: "",
+                username: null,
+                is_medic: null,
+                intention_date: "",
+                is_contract_accepted: false,
+                time: 123,
+                prosthesis_size: "",
+                url_to_redirect: null,
+                is_new: true,
+                show_etapa_1: true,
+                show_etapa_2: false,
+                aceito_contrato: null,
+                search_treatment_selected_id: null,
+                treatment_id: "",
+                friends_names:{
+                  amiga1:"",
+                  amiga2:"",
+                  amiga3:"",
+                },
+                friends_phones:{
+                amigaPhone1:"",
+                amigaDdd1:"",
+                amigaPhone2:"",
+                amigaDdd2:"",
+                amigaPhone3:"",
+                amigaDdd3:"",
+                },
+                simulator: {                    
+                    key: null,
+                    medic_id: null,
+                    medic_name: null,
+                    user_id: null,
+                    name: null,
+                    email: null,
+                    ddd: "",
+                    phone: "",
+                    phone_validation_code: null,
+                    user_name: null,
+                    friends_name: null,
+
+                }
+            },
+
+            mounted: function () {
+                this.url_to_redirect = cds_url_param('url');
+            },
+
+            methods: {
+
+                  validatePhoneFriends: function(){
+
+                    console.log("validatePhonefriend");
+
+                    this.phone_normalized = null;
+
+                    if(this.friends_phones.amigaPhone1 == undefined || this.friends_phones.amigaPhone1 == ""){
+                        ac_notify('Digite seu telefone para continuar!', 'error', 2000);
+                        return
+                    };
+
+                    if (this.friends_phones.amigaDdd1 == undefined || this.friends_phones.amigaDdd1 == "") {
+                        ac_notify('Digite seu ddd para continuar!', 'error', 2000);
+                        return
+                    }
+
+                    var valid_ddd = false;
+                    var amigaDdd1 = this.friends_phones.amigaDdd1.replace(/\D/g,'');
+
+                    for(var i = 0; i < aescare_data_ddds.length; i++) {
+                        if(amigaDdd1 ==  aescare_data_ddds[i]['phone_code']) {
+                            valid_ddd = true;
+                        }
+                    };
+
+                    if(!valid_ddd) {
+                        ac_notify('DDD inválido!', 'error', 2000);
+                        return
+                    }
+
+                    this.friends_phones.amigaPhone1 = this.friends_phones.amigaPhone1.replace(/\D/g,'');
+
+                    var phone_string_size = this.friends_phones.amigaPhone1.length
+                    if (!(phone_string_size == 8 || phone_string_size == 9)) {
+                        ac_notify('Número de telefone inválido!', 'error', 2000);
+                        return
+                    }
+                    
+                    this.phone_normalized = null;
+
+                    if (phone_string_size == 8) {
+                        this.phone_normalized = this.phone_code + amigaDdd1 + '9' + this.friends_phones.amigaPhone1;
+                    }
+                    else {
+                        this.phone_normalized = this.phone_code + this.friends_phones.amigaDdd1 + this.friends_phones.amigaPhone1;
+                    }
+
+                },
+
+                 validatePhone: function(){
+
+                    console.log("validatePhone");
+
+                    this.phone_normalized = null;
+
+                    if(this.simulator.phone == undefined || this.simulator.phone == ""){
+                        ac_notify('Digite seu telefone para continuar!', 'error', 2000);
+                        return
+                    };
+
+                    if (this.simulator.ddd == undefined || this.simulator.ddd == "") {
+                        ac_notify('Digite seu ddd para continuar!', 'error', 2000);
+                        return
+                    }
+
+                    var valid_ddd = false;
+                    var ddd = this.simulator.ddd.replace(/\D/g,'');
+
+                    for(var i = 0; i < aescare_data_ddds.length; i++) {
+                        if(ddd ==  aescare_data_ddds[i]['phone_code']) {
+                            valid_ddd = true;
+                        }
+                    };
+
+                    if(!valid_ddd) {
+                        ac_notify('DDD inválido!', 'error', 2000);
+                        return
+                    }
+
+                    this.simulator.phone = this.simulator.phone.replace(/\D/g,'');
+
+                    var phone_string_size = this.simulator.phone.length
+                    if (!(phone_string_size == 8 || phone_string_size == 9)) {
+                        ac_notify('Número de telefone inválido!', 'error', 2000);
+                        return
+                    }
+                    
+                    this.phone_normalized = null;
+
+                    if (phone_string_size == 8) {
+                        this.phone_normalized = this.phone_code + ddd + '9' + this.simulator.phone;
+                    }
+                    else {
+                        this.phone_normalized = this.phone_code + this.simulator.ddd + this.simulator.phone;
+                    }
+
+                },
+               
+              
+                resendPhoneValidationCode: function() {
+                    console.log("resendPhoneValidationCode");
+                    this.validationCodeSent = false;
+                    this.sendPhoneValidationCode();
+                },
+
+               
+        
+                sendPhoneValidationCode: function() {
+                    console.log("sendPhoneValidationCode");
+
+                    if(this.validationCodeSent){
+                        return;                        
+                    }
+
+                    this.validatePhone();
+
+                    if(this.phone_normalized == null){
+                        return;
+                    }
+
+                    var formData = new FormData();
+                    formData.append("phone", this.phone_normalized);
+                    self = this;
+                    $.ajax({
+                        type: 'POST',
+                        url: aescare.ws_host + '/user/send-phone-validation-code',
+                        data: formData,
+                        crossDomain: true,
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function (data) {
+                            if (data.code != 1) {
+                                ac_notify(data.message, 'error', 2000);
+                            } else {
+                                ac_notify("Código de verificação enviado por SMS e Whatsapp", 'success', 3000);
+                                self.validationCodeSent = true;
+                                self.validationCode = data.validation_code;
+                                $("#phone_validation_msg").show();
+                            }
+
+                        },
+
+                        dataType: 'json'
+                    });
+
+                },
+
+
+                 sendInviteSimulator: function() {
+                    console.log("sendInviteSimulator");
+                     this.validatePhoneFriends();
+
+                    var formData = new FormData();
+                    formData.append("friends_phones", this.friends_phones_normalized,);
+                    formData.append("user_name", this.user_name_normalized,);
+                    formData.append("friends_name", this.friends_name_normalized,);
+
+                    self = this;
+                    $.ajax({
+                        type: 'POST',
+                        url: aescare.ws_host + '/user/send-phone-simulator',
+                        data: formData,
+                        crossDomain: true,
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        xhrFields: {
+                            withCredentials: true
+                        },
+                        success: function (data) {
+                            if (data.code != 1) {
+                                ac_notify(data.message, 'error', 2000);
+                            } else {
+                                ac_notify("Convite de simulação enviado por whatsapp com sucesso", 'success', 3000);
+                               /* self.validationCodeSent = true;
+                                self.validationCode = data.validation_code;
+                                $("#phone_validation_msg").show();*/
+                            }
+
+                        },
+
+                        dataType: 'json'
+                    });
+
+                },
+                 
+                
+                send: function () {
+
+
+                    if (this.username == null || this.username == "") {
+                        cds_notify("Preencha seu nome de usuário.", 'error', 3000);
+                        return;
+                    }
+                    if (this.phone == "" && this.phone == null) {
+                        cds_notify("Digite seu telefone.", 'error', 3000);
+                        return;
+                    }
+                    if (this.simulator == "" && this.simulator == null) {
+                        cds_notify("Confirme o seu número.", 'error', 3000);
+                        return;
+                    }
+                    
+                     if (this.email == "" && this.email == null) {
+                        cds_notify("Digite seu E-mail.", 'error', 3000);
+                        return;
+                    }
+
+                    if (this.treatment_id == "" && this.treatment_id == null) {
+                        cds_notify("Selecione o procedimento que tem interesse em realizar", 'error', 3000);
+                        return;
+                    }
+                         if (this.body_part == "" && this.body_part == null) {
+                        cds_notify("Selecione a parte do corpo.", 'error', 3000);
+                        return;
+                    }   
+
+                    if (this.intention_date == "" && this.intention_date == null) {
+                        cds_notify("Quando você pretende operar?", 'error', 3000);
+                        return;
+                    }
+
+                    if (this.friends_names == "" && this.friends_names == null) {
+                        cds_notify("Preencha os nomes das suas amigas.", 'error', 3000);
+                        return;
+                    }
+
+                    if (this.friends_phones == "" && this.friends_phones == null) {
+                        cds_notify("Preencha o telefone das suas amigas.", 'error', 3000);
+                        return;
+                    }   
+                                                 
+
+                    $('#loadingModal').modal('show');
+
+                    var formData = new FormData();
+                    let friends_names = [amiga1, amiga2, amiga3];
+                    let friends_phones = [amigaPhone1, amigaPhone2, amigaPhone3]
+                    formData.append("phone", this.phone);
+                    //formData.append("email", this.email);
+                    formData.append("username", this.username);
+                    formData.append("user_id", this.user_id);
+                    formData.append("prosthesis_size", this.prosthesis_size);
+                    formData.append("intention_date", this.intention_date);
+                    formData.append("friends_names", this.friends_names);
+                    formData.append("friends_phones", this.friends_phones);
+                    formData.append("treatment_id", this.treatment_id);
+                    formData.append("body_part", this.body_part);
+                     $.ajax({
+                        type: 'POST',
+                        url: aescare.ws_host +'/simulation',
+                        data: formData,
+                        crossDomain: true,
+                        processData: false,
+                        contentType: false,
+                        cache: false,
+                        xhrFields: {
+                            withCredentials: true
+                        },
+
+                        success: function (data) {
+
+                           if(data.code == 1){
+                                if(simulator_app.redirect){
+                                    window.location.href = simulator_app.redirect;
+                                }else{
+
+                                    if(simulator_app.is_medic){
+                                        window.location.href = "/my";
+                                    }else if(simulator_app.city_id != null){
+                                        window.location.href = "/home?near="+simulator_app.city_id;
+                                    }else{
+                                        window.location.href = "https://my.crisalix.com/signup?token=bed4d1d71a894c0e930c7a5beee1a8c7";
+                                    }
+                                }
+                            }else{
+                                $('#loadingModal').modal('hide');
+                                ac_notify(data.message);
+                            }
+                            
+                        },
+                        dataType: 'json'
+                    }).done(function() {$('#loadingModal').modal('hide');});
+
+                
+
+                }
+
+            }
+        });
+
+        function refresh_autocomplete(){    
+
+             $("#search_treatment").autocomplete({
+        source: function(request, response) {
+          $.ajax({
+            dataType: "json",
+            type: 'GET',
+            url: "https://ws.aescare.com/treatment",
+            data: { 'name': $('#search_treatment').val() },
+            success: function(data) {
+             
+              response($.map(data, function(item) {
+                if (!item)
+                    return {}
+                return { label: item.name, value: item.treatment_id };
+              }));
+            },
+            error: function(data) {
+                //$('input.suggest-user').removeClass('ui-autocomplete-loading');
+            }
+          });
+        },
+        appendTo: "#react-autowhatever-treatment_select",
+        select: function(event, ui) {
+          simulator_app.treatment_id = ui.item.label;
+          simulator_app.search_treatment_selected_id = ui.item.value;
+          console.log(simulator_app.treatment_id); 
+        }
+      });        
+                        
+        }
+
+
+    </script>
+    
+    <script>
+
+        $(document).ready(function () {
+            refresh_autocomplete();            
+        });
+    
+    </script>
+</body>
+
+</html>
